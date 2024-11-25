@@ -62,6 +62,57 @@ def mainMenu(user, cart, inventory, history):
 
             print("Successful logout.")
 
+        #View account information
+        elif option == "1":
+            user.viewAccountInformation()
+
+        #View inventory information
+        elif option == "2":
+            pass
+
+        #View cart information
+        elif option == "3":
+            while True:
+                print("\nCart Menu")
+                print("0. Return to Main Menu")
+                print("1. View Cart")
+                print("2. Add to Cart")
+                print("3. Remove from Cart")
+                print("4. Checkout")
+                cartOption = input("Enter in your menu choice: ")
+                print()
+
+                #Goes back to the main menu
+                if cartOption == "0":
+                    break
+
+                #View the cart
+                elif cartOption == "1":
+                    cart.viewCart(user.getUserID())
+
+                #Add to the cart
+                elif cartOption == "2":
+                    ISBN = input("Enter in the ISBN of the book you want to add to the cart: ")
+                    quantity = int(input("Enter in the quantity: "))
+                    print()
+                    
+                    cart.addToCart(user.getUserID(), ISBN, quantity)
+
+                #Remove from the cart
+                elif cartOption == "3":
+                    ISBN = input("Enter in the ISBN of the item you want to remove: ")
+                    print()
+
+                    cart.removeFromCart(user.getUserID(), ISBN)
+
+                #Checkout
+                elif cartOption == "4":
+                    cart.checkOut(user.getUserID())
+                    
+        #View order information
+        elif option == "4":
+            pass
+
         ## incorrect menu option
         else:
             print("That's not a menu option. Please try again.")
