@@ -35,7 +35,7 @@ class OrderHistory:
             print("No orders found for this user.")
 
     def viewOrder(self, userID, orderID):
-        self.cursor.execute("SELECT * FROM Orders WHERE UserID = ? AND OrderNumber = ?", (userID, orderID))
+        self.cursor.execute("SELECT * FROM Orders WHERE UserID = ? AND OrderID = ?", (userID, orderID))
         order = self.cursor.fetchone()
 
         if order:
@@ -64,7 +64,7 @@ class OrderHistory:
     def createOrder(self, userID, quantity, cost, date):
         orderID = str(random.randint(1000, 9999))
         self.cursor.execute("""
-            INSERT INTO Orders (UserID, OrderNumber, Quantity, TotalCost, Date)
+            INSERT INTO Orders (UserID, OrderID, Quantity, TotalCost, Date)
             VALUES (?, ?, ?, ?, ?)
         """, (userID, orderID, quantity, cost, date))
         self.connection.commit()
@@ -82,7 +82,7 @@ class OrderHistory:
                 if item:
                     title = item[1]  
                     self.cursor.execute("""
-                        INSERT INTO OrderItems (OrderNumber, ISBN, Quantity)
+                        INSERT INTO OrderItems (OrderID, ISBN, Quantity)
                         VALUES (?, ?, ?)
                     """, (orderID, ISBN, Quantity))
                     print(f"Added {Quantity} of {title} (ISBN: {ISBN}) to order {orderID}.")
