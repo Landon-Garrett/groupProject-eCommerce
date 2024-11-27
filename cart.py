@@ -57,6 +57,7 @@ class Cart:
         ## cursor to send queries through
         cursor = connection.cursor()
 
+        #Trys for a valid quantity
         try:
             quantity = int(quantity)
             if quantity < 1:
@@ -136,7 +137,7 @@ class Cart:
             connection.commit()
             print(f"Removed ISBN {ISBN} from cart for userID {userID}.")
         else:
-            print(f"Item with ISBN {ISBN} was not found for the userID {userID}.")
+            print(f"Item with ISBN {ISBN} was not found in the cart for the userID {userID}.")
 
         ## closes connection
         cursor.close()
@@ -172,7 +173,7 @@ class Cart:
             cursor.execute("SELECT Price FROM Inventory WHERE ISBN = ?", (ISBN,))
             results = cursor.fetchone()
 
-            totalCost += results[0] * Quantity
+            totalCost += results[0] * Quantity #Gets total cost of the cart
             totalQuantity += Quantity   #Gets the total quantity of the cart
 
         #decrease the stock from the inventory
