@@ -39,9 +39,20 @@ order = self.cursor.fetchone()
  if order:
             orderDate = order[1]
             print(f"\nOrder ID: {orderID}, Date: {orderDate}")
-            self.viewOrderItems(orderID)  
+            
+        self.cursor.execute("SELECT ISBN, Quantity FROM OrderItems WHERE OrderID = ?", (order_id,))
+            order_items = self.cursor.fetchall()
+
+            if order_items:
+                print("Items in this order:")
+                for item in order_items:
+                    ISBN, Quantity = item
+                    print(f"ISBN: {ISBN}, Quantity: {Quantity}")
+            else:
+                print("No items found for this order.")
         else:
-            print(f"Order {orderID} not found or does not belong to user {userID}.")
+            print(f"Order {order_id} not found or does not belong to user {user_id}.")
+
 
 def createOrder(self,userID,quantity, cost, date):
     orderID= str(random.randint(1000,9999))
