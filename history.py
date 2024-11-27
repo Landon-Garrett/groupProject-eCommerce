@@ -19,7 +19,7 @@ class OrderHistory:
                 orderID = order[0]
                 orderDate = order[1]
                 print(f"Order {count}: Order ID {orderID}, Date: {orderDate}")
-                self.cursor.execute("SELECT ISBN, Quantity FROM OrderItems WHERE OrderID = ?", (orderID,))
+                self.cursor.execute("SELECT ISBN, Quantity FROM Orders WHERE OrderID = ?", (orderID,))
                 order_items = self.cursor.fetchall()
 
                 if order_items:
@@ -35,7 +35,7 @@ class OrderHistory:
             print("No orders found for this user.")
 
     def viewOrder(self, userID, orderID):
-        self.cursor.execute("SELECT * FROM Orders WHERE UserID = ? AND OrderNumber = ?", (userID, orderID))
+        self.cursor.execute("SELECT * FROM OrderItems WHERE UserID = ? AND OrderNumber = ?", (userID, orderID))
         order = self.cursor.fetchone()
 
         if order:
