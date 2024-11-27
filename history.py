@@ -19,7 +19,7 @@ class OrderHistory:
                 orderID = order[0]
                 orderDate = order[1]
                 print(f"Order {count}: Order ID {orderID}, Date: {orderDate}")
-                self.cursor.execute("SELECT ISBN, Quantity FROM Orders WHERE OrderID = ?", (orderID,))
+                self.cursor.execute("SELECT ISBN, Quantity FROM OrderItems WHERE OrderID = ?", (orderID,))
                 order_items = self.cursor.fetchall()
 
                 if order_items:
@@ -35,7 +35,7 @@ class OrderHistory:
             print("No orders found for this user.")
 
     def viewOrder(self, userID, orderID):
-        self.cursor.execute("SELECT * FROM OrderItems WHERE UserID = ? AND OrderNumber = ?", (userID, orderID))
+        self.cursor.execute("SELECT * FROM Orders WHERE UserID = ? AND OrderNumber = ?", (userID, orderID))
         order = self.cursor.fetchone()
 
         if order:
@@ -49,12 +49,18 @@ class OrderHistory:
                 print("Items in this order:")
                 for item in order_items:
                     ISBN, Quantity = item
-                    print(f"ISBN: {ISBN}, Quantity: {Quantity}")
+                   self.cursor.execute("SELECT Title, Author, Price FROM Inventory WHERE ISBN = ?", (ISBN,))
+                    inventory_item = self.cursor.fetchone()
+
+                    if inventory_item:
+                        title, author, price = inventory_item
+                        print(f"ISBN: {ISBN}, Title: {title}, Author: {author}, Price: {price}, Quantity: {Quantity}")
+                    else:
+                        print(f"Item with ISBN {ISBN} not found in inventory.")
             else:
                 print("No items found for this order.")
         else:
             print(f"Order {orderID} not found or does not belong to user {userID}.")
-
     def createOrder(self, userID, quantity, cost, date):
         orderID = str(random.randint(1000, 9999))
         self.cursor.execute("""
