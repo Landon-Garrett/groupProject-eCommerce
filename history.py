@@ -49,7 +49,7 @@ class OrderHistory:
                 print("Items in this order:")
                 for item in order_items:
                     ISBN, Quantity = item
-                   self.cursor.execute("SELECT Title, Author, Price FROM Inventory WHERE ISBN = ?", (ISBN,))
+                      self.cursor.execute("SELECT Title, Author, Price FROM Inventory WHERE ISBN = ?", (ISBN,))
                     inventory_item = self.cursor.fetchone()
 
                     if inventory_item:
