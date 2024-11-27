@@ -1,38 +1,54 @@
 import sqlite3
+import sys
 
 class Inventory:
-    def __init__(self, database_name=None):
-        self.database_name = database_name
-        self.connection = None
-        if self.database_name:
-            self.connect_to_database()
-
-    def connect_to_database(self):
-        self.connection = sqlite3.connect(self.database_name)
-        self.cursor = self.connection.cursor()
+    def __init__(self, databaseName= "methods.db"):
+        self.databaseName = databaseName
 
     def view_inventory(self):
-        if not self.connection:
-            print("No database connected.")
-            return
+        # setup database and query the database
+        try:
+            connection = sqlite3.connect(self.databaseName)
+
+        except:
+            print("Failed database connection.")
+
+            ## exits the program if unsuccessful
+            sys.exit()
+
+        ## cursor to send queries through
+        cursor = connection.cursor()
 
         query = "SELECT * FROM inventory"  
-        self.cursor.execute(query)
-        items = self.cursor.fetchall()
+        cursor.execute(query)
+        items = cursor.fetchall()
 
         print("Current Inventory:")
         for item in items:
             print(item)  
 
+        ## closes connection
+        cursor.close()
+        connection.close()
+
     def search_inventory(self):
-        if not self.connection:
-            print("No database connected.")
-            return
+        # setup database and query the database
+        try:
+            connection = sqlite3.connect(self.databaseName)
+
+        except:
+            print("Failed database connection.")
+
+            ## exits the program if unsuccessful
+            sys.exit()
+
+        ## cursor to send queries through
+        cursor = connection.cursor()
 
         title = input("Enter the title to search: ")
         query = "SELECT * FROM inventory WHERE title LIKE ?"
-        self.cursor.execute(query, ('%' + title + '%',))
-        results = self.cursor.fetchall()
+        cursor.execute(query, ('%' + title + '%',))
+        results = cursor.fetchall()
 
         if results:
             print("Search Results:")
@@ -41,20 +57,33 @@ class Inventory:
         else:
             print("No items found with that title.")
 
+        ## closes connection
+        cursor.close()
+        connection.close()
+
     def decrease_stock(self, isbn, quantity=1):
-        if not self.connection:
-            print("No database connected.")
-            return
+        # setup database and query the database
+        try:
+            connection = sqlite3.connect(self.databaseName)
+
+        except:
+            print("Failed database connection.")
+
+            ## exits the program if unsuccessful
+            sys.exit()
+
+        ## cursor to send queries through
+        cursor = connection.cursor()
 
         query = "UPDATE inventory SET stock = stock - ? WHERE ISBN = ?"
-        self.cursor.execute(query, (quantity, isbn))
-        self.connection.commit()
+        cursor.execute(query, (quantity, isbn))
+        connection.commit()
 
-        if self.cursor.rowcount > 0:
+        if cursor.rowcount > 0:
             print(f"Decreased stock for ISBN {isbn} by {quantity}.")
         else:
             print("ISBN not found or insufficient stock.")
 
-    def close(self):
-        if self.connection:
-            self.connection.close()
+        ## closes connection
+        cursor.close()
+        connection.close()
