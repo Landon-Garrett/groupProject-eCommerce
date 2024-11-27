@@ -34,7 +34,7 @@ order = self.cursor.fetchone()
             print(f"Order {orderID} not found or does not belong to user {userID}.")
 
 def createOrder(self,userID,quantity, cost, date):
-    orderID= str(random.randit(1000,9999))
+    orderID= str(random.randint(1000,9999))
      self.cursor.execute("""
         INSERT INTO Orders (UserID, OrderNumber, Quantity, TotalCost, Date)
         VALUES (?, ?, ?, ?, ?)
