@@ -69,34 +69,34 @@ def mainMenu(user, cart, inventory, history):
         #View inventory information
         elif option == "2":
             while True:
-            print("\nInventory Menu:")
-            print("0. Return to Main Menu")
-            print("1. View Inventory")
-            print("2. Search Inventory")
-            print("3. Decrease Stock")
-            inventoryOption = input("Enter your menu choice: ")
-            print()
+                print("\nInventory Menu:")
+                print("0. Return to Main Menu")
+                print("1. View Inventory")
+                print("2. Search Inventory")
+                print("3. Decrease Stock")
+                inventoryOption = input("Enter your menu choice: ")
+                print()
 
-            # returns to the main menu
-            if inventoryOption == "0":
-                break
+                # returns to the main menu
+                if inventoryOption == "0":
+                    break
 
-            # views the inventory
-            elif inventoryOption == "1":
-                inventory.view_inventory()
+                # views the inventory
+                elif inventoryOption == "1":
+                    inventory.view_inventory()
 
-            # searches through inventory
-            elif inventoryOption == "2":
-                inventory.search_inventory()
+                # searches through inventory
+                elif inventoryOption == "2":
+                    inventory.search_inventory()
 
-            # decreases the stock
-            elif inventoryOption == "3":
-                isbn = input("Enter the ISBN to decrease stock: ")
-                quantity = int(input("Enter the quantity to decrease: "))
-                inventory.decrease_stock(isbn, quantity)
+                # decreases the stock
+                elif inventoryOption == "3":
+                    isbn = input("Enter the ISBN to decrease stock: ")
+                    quantity = int(input("Enter the quantity to decrease: "))
+                    inventory.decrease_stock(isbn, quantity)
 
-            else:
-                print("That's not a menu option. Please try again.")
+                else:
+                    print("That's not a menu option. Please try again.")
 
         #View cart information
         elif option == "3":
@@ -139,24 +139,24 @@ def mainMenu(user, cart, inventory, history):
                     
         #View order information
         elif option == "4":
-           while True:
-          print("\nOrder Menu")
-          print("0. Return to Main Menu")
-          print("1. View Order History")
-          print("2. View Specific Order")
-          orderOption = input("Enter your menu choice: ")
-          print()
-          if orderOption =="0":
-              break
-           # View the entire order history
-        elif orderOption == "1":
-            history.viewHistory(user.getUserID())
-         # View a specific order
-        elif orderOption == "2":
-            order_id = input("Enter the order ID to view: ")
-            history.viewOrder(user.getUserID(), order_id)
-         else:
-            print("That's not a menu option. Please try again.")
+            while True:
+                print("\nOrder Menu")
+                print("0. Return to Main Menu")
+                print("1. View Order History")
+                print("2. View Specific Order")
+                orderOption = input("Enter your menu choice: ")
+                print()
+                if orderOption =="0":
+                    break
+                # View the entire order history
+                elif orderOption == "1":
+                    history.viewHistory(user.getUserID())
+                # View a specific order
+                elif orderOption == "2":
+                    order_id = input("Enter the order ID to view: ")
+                    history.viewOrder(user.getUserID(), order_id)
+                else:
+                    print("That's not a menu option. Please try again.")
 
         ## incorrect menu option
         else:
