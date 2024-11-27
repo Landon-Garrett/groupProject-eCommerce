@@ -4,7 +4,7 @@ import random
 class OrderHistory:
 
     def __init__(self, database_name = "orders.db"):
-        self.dataase_name = database_name
+        self.database_name = database_name
         self.connection = sqlite3.connect(self.database_name)
         self.cursor = self.connection.cursor()
    def viewHistory(self,user_id):
@@ -18,7 +18,17 @@ class OrderHistory:
            orderID = order[0]
            orderDate = order[1]
           print(f"Order {count}: Order ID {orderID}, Date: {orderDate}")
-          self.viewOrderItems(orderID)
+         self.cursor.execute("SELECT ISBN, Quantity FROM OrderItems WHERE OrderID = ?", (orderID,))
+                order_items = self.cursor.fetchall()
+
+                if order_items:
+                    print("Items in this order:")
+                    for item in order_items:
+                        ISBN, Quantity = item
+                        print(f"ISBN: {ISBN}, Quantity: {Quantity}")
+                else:
+                    print("No items found for this order.")
+                
         count +=1
 else:
 print("No orders found for this user.")
