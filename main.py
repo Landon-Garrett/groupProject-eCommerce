@@ -136,6 +136,9 @@ def mainMenu(user, cart, inventory, history):
                 #Checkout
                 elif cartOption == "4":
                     cart.checkOut(user.getUserID())
+
+                else:
+                    print("That's not a menu option. Please try again.")
                     
         #View order information
         elif option == "4":
