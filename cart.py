@@ -1,22 +1,31 @@
 import sqlite3
+import sys
+from inventory import *
+from history import *
+import datetime
 
 class Cart:
-
-    def __init__(self):
-        sample = ""
-
     def __init__(self, databaseName = "methods.db"):
         self.databaseName = databaseName  
 
-        self.connection = sqlite3.connect(self.databaseName)
-        self.cursor = self.connection.cursor() 
-
     def viewCart(self, userID):
+        ## setup database and query the database
+        try:
+            connection = sqlite3.connect(self.databaseName)
+
+        except:
+            print("Failed database connection.")
+
+            ## exits the program if unsuccessful
+            sys.exit()
+
+        ## cursor to send queries through
+        cursor = connection.cursor()
 
         #gets everything in the cart to view
-        self.cursor.execute("""SELECT Inventory.Title, Inventory.Author, Inventory.Genre, Inventory.Price, Cart.Quantity 
+        cursor.execute("""SELECT Inventory.Title, Inventory.Author, Inventory.Genre, Inventory.Price, Cart.Quantity 
                                 FROM Cart INNER JOIN Inventory ON Cart.ISBN = Inventory.ISBN WHERE Cart.userID = ?""", (userID,))
-        cartItems = self.cursor.fetchall()
+        cartItems = cursor.fetchall()
 
         #if there is items is the cart view it, if not say the cart is empty
         if cartItems:
@@ -29,7 +38,24 @@ class Cart:
         else:
             print("Cart is empty")
 
+        #Closes connection
+        cursor.close()
+        connection.close()
+
     def addToCart(self, userID, ISBN, quantity = 1):
+
+        ## setup database and query the database
+        try:
+            connection = sqlite3.connect(self.databaseName)
+
+        except:
+            print("Failed database connection.")
+
+            ## exits the program if unsuccessful
+            sys.exit()
+
+        ## cursor to send queries through
+        cursor = connection.cursor()
 
         try:
             quantity = int(quantity)
@@ -42,8 +68,8 @@ class Cart:
 
 
         #selects the ISBN and its quantity to check if the ISBN and quantity is valid
-        self.cursor.execute("SELECT Stock FROM Inventory WHERE ISBN = ?", (ISBN,))
-        available = self.cursor.fetchone()
+        cursor.execute("SELECT Stock FROM Inventory WHERE ISBN = ?", (ISBN,))
+        available = cursor.fetchone()
 
         #if the ISBN does not exist
         if available is None: 
@@ -54,8 +80,8 @@ class Cart:
         stockAvailable = available[0]
 
         #checks if the ISBN is already in the cart
-        self.cursor.execute("SELECT Quantity FROM Cart WHERE UserID = ? AND ISBN = ?" ,(userID, ISBN,))
-        cartItem = self.cursor.fetchone()
+        cursor.execute("SELECT Quantity FROM Cart WHERE UserID = ? AND ISBN = ?" ,(userID, ISBN,))
+        cartItem = cursor.fetchone()
 
         #if the ISBN exist already it adds the new quantity onto the existing quantity
         if cartItem:
@@ -67,7 +93,8 @@ class Cart:
                 print(f"Error: adding {quantity} exceeds available stock of {stockAvailable}.")
                 return
             
-            self.cursor.execute("UPDATE Cart SET Quantity = ? WHERE UserID = ? AND ISBN = ?", (newQuantity, userID, ISBN,))
+            #updates it to the new quantity
+            cursor.execute("UPDATE Cart SET Quantity = ? WHERE UserID = ? AND ISBN = ?", (newQuantity, userID, ISBN,))
             print(f"Updated the quantity of ISBN {ISBN} for the userID {userID}, to the new quantity {newQuantity}.")
         
         #if the ISBN does not exist it creates a new entry
@@ -78,32 +105,91 @@ class Cart:
                 return
         
             #if everything is valid then the item is added to the cart
-            self.cursor.execute("INSERT INTO Cart (userID, ISBN, quantity) VALUES (?, ?, ?)", (userID, ISBN, quantity,))
+            cursor.execute("INSERT INTO Cart (userID, ISBN, quantity) VALUES (?, ?, ?)", (userID, ISBN, quantity,))
             print(f"Added {quantity} of ISBN {ISBN} to the cart for the userID {userID}.")
 
-        self.connection.commit()
+        connection.commit()
+
+        ## closes connection
+        cursor.close()
+        connection.close()
 
     def removeFromCart(self, userID, ISBN):
+        ## setup database and query the database
+        try:
+            connection = sqlite3.connect(self.databaseName)
+
+        except:
+            print("Failed database connection.")
+
+            ## exits the program if unsuccessful
+            sys.exit()
+
+        ## cursor to send queries through
+        cursor = connection.cursor()
 
         #deletes from cart
-        self.cursor.execute("DELETE FROM Cart WHERE UserID = ? AND ISBN = ?", (userID, ISBN,))
+        cursor.execute("DELETE FROM Cart WHERE UserID = ? AND ISBN = ?", (userID, ISBN,))
         
         #checks to make sure there is something there to delete
-        if self.cursor.rowcount > 0:
-            self.connection.commit()
+        if cursor.rowcount > 0:
+            connection.commit()
             print(f"Removed ISBN {ISBN} from cart for userID {userID}.")
         else:
             print(f"Item with ISBN {ISBN} was not found for the userID {userID}.")
 
-    def checkOut(self, userID):
-        pass
+        ## closes connection
+        cursor.close()
+        connection.close()
 
-cart = Cart("methods.db")
-cart.viewCart("12-3456")  #view cart at the userID
-cart.addToCart("34-342", "4355", 34)  #adds to cart at invalid ISBN
-cart.addToCart("34-342", "978-0451524935", 0.5) #adds invalid digit
-cart.addToCart("34-342", "978-0451524935", "abc") #adds invalid quantity
-cart.addToCart("34-342", "978-0451524935", 1) #adds to cart at valid ISBN
-cart.addToCart("34-342", "978-0451524935", 14) #adds to cart at the previous ISBN but too many items
-cart.addToCart("34-342", "978-0446310789", 1000) #adds to cart at a new valid ISBN but with too many items
-#cart.removeFromCart("34-342", "978-0451524935") #deletes from cart
+    def checkOut(self, userID):
+        ## setup database and query the database
+        try:
+            connection = sqlite3.connect(self.databaseName)
+
+        except:
+            print("Failed database connection.")
+
+            ## exits the program if unsuccessful
+            sys.exit()
+
+        ## cursor to send queries through
+        cursor = connection.cursor()
+
+        #Fetches CartItems
+        cursor.execute("SELECT ISBN, Quantity FROM Cart WHERE userID = ?", (userID,))
+        cartItems = cursor.fetchall()
+
+        #if there are no items in the cart
+        if not cartItems:
+            print("There are not items in your cart cannot checkout.")
+            return
+        
+        #Calculates the total cost of the cart, as well as the total quantity of items in the cart
+        totalCost = 0
+        totalQuantity = 0
+        for ISBN, Quantity in cartItems:
+            cursor.execute("SELECT Price FROM Inventory WHERE ISBN = ?", (ISBN,))
+            results = cursor.fetchone()
+
+            totalCost += results[0] * Quantity
+            totalQuantity += Quantity   #Gets the total quantity of the cart
+
+        #decrease the stock from the inventory
+        for ISBN, Quantity in cartItems:
+            Inventory.decrease_stock(self, ISBN, Quantity)
+
+        #Gets the current date
+        currentDate = datetime.date.today().strftime("%m/%d/%y")
+
+        #creates an order for the cart items
+        orderID = OrderHistory.createOrder(self, userID, totalQuantity, totalCost, currentDate)
+        OrderHistory.addOrderItems(self, userID, orderID)
+
+        #Clears the cart
+        cursor.execute("DELETE FROM Cart WHERE userID = ?", (userID,))
+        connection.commit()
+
+        ## closes connection
+        cursor.close()
+        connection.close()
