@@ -139,7 +139,24 @@ def mainMenu(user, cart, inventory, history):
                     
         #View order information
         elif option == "4":
-            pass
+           while True:
+          print("\nOrder Menu")
+          print("0. Return to Main Menu")
+          print("1. View Order History")
+          print("2. View Specific Order")
+          orderOption = input("Enter your menu choice: ")
+          print()
+          if orderOption =="0":
+              break
+           # View the entire order history
+        elif orderOption == "1":
+            history.viewHistory(user.getUserID())
+         # View a specific order
+        elif orderOption == "2":
+            order_id = input("Enter the order ID to view: ")
+            history.viewOrder(user.getUserID(), order_id)
+         else:
+            print("That's not a menu option. Please try again.")
 
         ## incorrect menu option
         else:
