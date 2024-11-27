@@ -1,92 +1,146 @@
 import sqlite3
 import random
+import sys
 
 class OrderHistory:
 
-    def __init__(self, database_name = "orders.db"):
-        self.database_name = database_name
-        self.connection = sqlite3.connect(self.database_name)
-        self.cursor = self.connection.cursor()
+    def __init__(self, databaseName = "methods.db"):
+        self.databaseName = databaseName
 
     def viewHistory(self, userID):
-        query = "SELECT * FROM Orders WHERE UserID = ?"
-        self.cursor.execute(query, (userID,))
-        orders = self.cursor.fetchall()
+        ## setup database and query the database
+        try:
+            connection = sqlite3.connect(self.databaseName)
+
+        except:
+            print("Failed database connection.")
+
+            ## exits the program if unsuccessful
+            sys.exit()
+
+        ## cursor to send queries through
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM Orders WHERE UserID = ?", (userID,))
+        orders = cursor.fetchall()
+
         if orders:
             print("Order History:")
-            count = 1
             for order in orders:
-                orderID = order[0]
-                orderDate = order[1]
-                print(f"Order {count}: Order ID {orderID}, Date: {orderDate}")
-                self.cursor.execute("SELECT ISBN, Quantity FROM OrderItems WHERE OrderID = ?", (orderID,))
-                order_items = self.cursor.fetchall()
-
-                if order_items:
-                    print("Items in this order:")
-                    for item in order_items:
-                        ISBN, Quantity = item
-                        print(f"ISBN: {ISBN}, Quantity: {Quantity}")
-                else:
-                    print("No items found for this order.")
-                
-                count += 1
+                print(f"Order ID: {order[0]}, User ID: {order[1]}, Item Number: {order[2]}, Cost: {order[3]}, Date: {order[4]}")
         else:
-            print("No orders found for this user.")
+            print(f"No orders found for User ID {userID}.")
+        
+        ## closes connection
+        cursor.close()
+        connection.close()
 
     def viewOrder(self, userID, orderID):
-        self.cursor.execute("SELECT * FROM Orders WHERE UserID = ? AND OrderID = ?", (userID, orderID))
-        order = self.cursor.fetchone()
+        ## setup database and query the database
+        try:
+            connection = sqlite3.connect(self.databaseName)
+
+        except:
+            print("Failed database connection.")
+
+            ## exits the program if unsuccessful
+            sys.exit()
+
+        # Cursor to send queries through
+        cursor = connection.cursor()
+
+        # Query specific order details
+        query = "SELECT * FROM Orders WHERE UserID = ? AND OrderNumber = ?"
+        cursor.execute(query, (userID, orderID))
+        order = cursor.fetchone()
 
         if order:
-            orderDate = order[1]
-            print(f"\nOrder ID: {orderID}, Date: {orderDate}")
-            
-            self.cursor.execute("SELECT ISBN, Quantity FROM OrderItems WHERE OrderID = ?", (orderID,))
-            order_items = self.cursor.fetchall()
+            print("Order Details:")
+            print(f"Order ID: {order[0]}, User ID: {order[1]}, Item Number: {order[2]}, Cost: {order[3]}, Date: {order[4]}")
 
-            if order_items:
-                print("Items in this order:")
-                for item in order_items:
-                    ISBN, Quantity = item
-                      self.cursor.execute("SELECT Title, Author, Price FROM Inventory WHERE ISBN = ?", (ISBN,))
-                    inventory_item = self.cursor.fetchone()
+            # Query for the items in the order
+            cursor.execute("SELECT ISBN, Quantity FROM OrderItems WHERE OrderNumber = ?", (orderID,))
+            items = cursor.fetchall()
 
-                    if inventory_item:
-                        title, author, price = inventory_item
-                        print(f"ISBN: {ISBN}, Title: {title}, Author: {author}, Price: {price}, Quantity: {Quantity}")
-                    else:
-                        print(f"Item with ISBN {ISBN} not found in inventory.")
+            if items:
+                print("\nOrder Items:")
+                for item in items:
+                    isbn, quantity = item
+                    cursor.execute("SELECT Title FROM Inventory WHERE ISBN = ?", (isbn,))
+                    title = cursor.fetchone()
+                    print(f"- {title[0]} (ISBN: {isbn}), Quantity: {quantity}")
             else:
-                print("No items found for this order.")
+                print("\nNo items found for this order.")
         else:
-            print(f"Order {orderID} not found or does not belong to user {userID}.")
+            print(f"No order found for User ID {userID} with Order ID {orderID}.")
+
+        # Closes connection
+        cursor.close()
+        connection.close()
+
+
     def createOrder(self, userID, quantity, cost, date):
+        ## setup database and query the database
+        try:
+            connection = sqlite3.connect(self.databaseName)
+
+        except:
+            print("Failed database connection.")
+
+            ## exits the program if unsuccessful
+            sys.exit()
+
+        ## cursor to send queries through
+        cursor = connection.cursor()
+
         orderID = str(random.randint(1000, 9999))
-        self.cursor.execute("""
-            INSERT INTO Orders (UserID, OrderID, Quantity, TotalCost, Date)
+        cursor.execute("""
+            INSERT INTO Orders (UserID, OrderNumber, ItemNumber, Cost, Date)
             VALUES (?, ?, ?, ?, ?)
         """, (userID, orderID, quantity, cost, date))
-        self.connection.commit()
+        connection.commit()
         print(f"Order {orderID} created successfully.")
+
+        ## closes connection
+        cursor.close()
+        connection.close()
+
         return orderID
 
     def addOrderItems(self, userID, orderID):
-        self.cursor.execute("SELECT ISBN, Quantity FROM Cart WHERE UserID = ?", (userID,))
-        cartItems = self.cursor.fetchall()
+        ## setup database and query the database
+        try:
+            connection = sqlite3.connect(self.databaseName)
+
+        except:
+            print("Failed database connection.")
+
+            ## exits the program if unsuccessful
+            sys.exit()
+
+        ## cursor to send queries through
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT ISBN, Quantity FROM Cart WHERE UserID = ?", (userID,))
+        cartItems = cursor.fetchall()
         
         if cartItems:
             for ISBN, Quantity in cartItems:
-                self.cursor.execute("SELECT * FROM Inventory WHERE ISBN = ?", (ISBN,))
-                item = self.cursor.fetchone()
+                cursor.execute("SELECT * FROM Inventory WHERE ISBN = ?", (ISBN,))
+                item = cursor.fetchone()
                 if item:
                     title = item[1]  
-                    self.cursor.execute("""
-                        INSERT INTO OrderItems (OrderID, ISBN, Quantity)
+                    cursor.execute("""
+                        INSERT INTO OrderItems (OrderNumber, ISBN, Quantity)
                         VALUES (?, ?, ?)
                     """, (orderID, ISBN, Quantity))
                     print(f"Added {Quantity} of {title} (ISBN: {ISBN}) to order {orderID}.")
                 else:
                     print(f"Item with ISBN {ISBN} not found in inventory.")
-            self.cursor.execute("DELETE FROM Cart WHERE UserID = ?", (userID,))
-            self.connection.commit()
+            cursor.execute("DELETE FROM Cart WHERE UserID = ?", (userID,))
+            connection.commit()
+
+        ## closes connection
+        cursor.close()
+        connection.close()
+
